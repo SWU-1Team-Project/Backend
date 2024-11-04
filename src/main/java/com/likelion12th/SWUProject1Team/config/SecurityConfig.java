@@ -109,7 +109,7 @@ public class SecurityConfig {
         // 경로별 인가 작업: 권한 줌
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/v1/users/login", "/", "/users/join", "/reissue").permitAll()
+                        .requestMatchers("/api/v1/users/login", "/", "/api/v1/users/join", "/reissue").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());     // 위 두 줄 외 다른 경로는 모두 로그인이 필요함
 
