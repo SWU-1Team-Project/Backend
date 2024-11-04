@@ -18,6 +18,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final String LOGOUT_PATH = "/api/v1/users/logout";
 
     public CustomLogoutFilter(JWTUtil jwtUtil, RefreshRepository refreshRepository) {
 
@@ -37,7 +38,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         String requestUri = request.getRequestURI();
 
         // 경로가 로그아웃인지 확인
-        if (!requestUri.matches("^\\/logout$")) {
+        if (!requestUri.matches(LOGOUT_PATH)) {
 
             filterChain.doFilter(request, response);
             return;

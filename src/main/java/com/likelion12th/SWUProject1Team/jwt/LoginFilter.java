@@ -25,7 +25,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final RefreshRepository refreshRepository;
 
     public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
-
+        setFilterProcessesUrl("/api/v1/users/login");
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshRepository =  refreshRepository;
@@ -100,6 +100,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 
 
+        System.out.println("LoginFilter username: " + username);
         //토큰 생성
         String access = jwtUtil.createJwt("access", username, role, 600000L);
         String refresh = jwtUtil.createJwt("refresh", username, role, 86400000L);

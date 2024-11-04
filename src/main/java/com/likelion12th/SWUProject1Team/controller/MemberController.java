@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @ResponseBody
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 public class MemberController {
 
     private final MemberService memberService;
@@ -27,4 +27,5 @@ public class MemberController {
 
         return "ok";
     }
+
 }
