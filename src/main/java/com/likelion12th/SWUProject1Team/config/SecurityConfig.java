@@ -6,6 +6,7 @@ import com.likelion12th.SWUProject1Team.jwt.JWTFilter;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
 import com.likelion12th.SWUProject1Team.jwt.LoginFilter;
 import com.likelion12th.SWUProject1Team.oauth2.CustomSuccessHandler;
+import com.likelion12th.SWUProject1Team.repository.MemberRepository;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import com.likelion12th.SWUProject1Team.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,16 +35,18 @@ public class SecurityConfig {
     private final RefreshRepository refreshRepository;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final MemberRepository memberRepository;
 
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository,
-                          CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler) {
+                          CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, MemberRepository memberRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
         this.refreshRepository = refreshRepository;
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
+        this.memberRepository = memberRepository;
     }
 
     @Bean
@@ -109,7 +112,8 @@ public class SecurityConfig {
         // 경로별 인가 작업: 권한 줌
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/v1/users/login", "/", "/api/v1/users/join", "/reissue").permitAll()
+                        .requestMatchers("/api/v1/users/login", "/", "/api/v1/users/join", "/api/v1/reissue",
+                                "/api/v1/users/checkEmail", "/api/v1/users/checkUsername", "/api/v1/users/checkPassword").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());     // 위 두 줄 외 다른 경로는 모두 로그인이 필요함
 
@@ -118,7 +122,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         // 로그인 필터 등록: LoginFilter를 UsernamePasswordAuthenticationFilter 대신 등록
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);

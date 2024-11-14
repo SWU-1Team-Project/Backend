@@ -30,7 +30,7 @@ public class ReissueController {
 
     }
 
-    @PostMapping("/reissue")
+    @PostMapping("/api/v1/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
         //get refresh token: 쿠키에서 받을 리프레쉬 토큰 저장할 변수
@@ -102,7 +102,7 @@ public class ReissueController {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);
         //cookie.setSecure(true);
-        //cookie.setPath("/");
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
 
         return cookie;
