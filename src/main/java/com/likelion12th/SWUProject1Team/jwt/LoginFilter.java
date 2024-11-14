@@ -1,6 +1,7 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
 import com.likelion12th.SWUProject1Team.entity.RefreshEntity;
+import com.likelion12th.SWUProject1Team.repository.MemberRepository;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -23,12 +24,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final MemberRepository memberRepository;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
+                       RefreshRepository refreshRepository, MemberRepository memberRepository) {
         setFilterProcessesUrl("/api/v1/users/login");
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshRepository =  refreshRepository;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -53,7 +57,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24*60*60);     // 생명주기
         //cookie.setSecure(true);       // https 통신 진행 시 필요
-        //cookie.setPath("/");          // 쿠키 적용 범위 설정 가능
+        cookie.setPath("/");          // 쿠키 적용 범위 설정 가능
         cookie.setHttpOnly(true);       // 자바스크립트로 해당 쿠키 접근을 못하도록
 
         return cookie;
@@ -98,6 +102,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
+        // userId 추출
+        int userId = memberRepository.findByUsername(username).getId();
 
 
         System.out.println("LoginFilter username: " + username);
@@ -121,6 +127,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setHeader("access", access);               // 헤더에 access 토큰을 access키에 넣어줌
         response.addCookie(createCookie("refresh", refresh));   // 응답 쿠키에 refresh 토큰 넣어줌
         response.setStatus(HttpStatus.OK.value());              // 응답 상태 코드 200으로 설정
+        response.setHeader("userId", userId+"");
 
     }
 
