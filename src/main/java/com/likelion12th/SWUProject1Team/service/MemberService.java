@@ -5,36 +5,40 @@ import com.likelion12th.SWUProject1Team.dto.PasswordDto;
 import com.likelion12th.SWUProject1Team.dto.JoinDTO;
 import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
+import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
 import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletWebRequest;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class MemberService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private final JWTUtil jwtUtil;
 
-    public MemberService( MemberRepository memberRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
 
-        this.memberRepository = memberRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
 
-    public void joinMember(JoinDTO joinDTO) {
+    public Member joinMember(JoinDTO joinDTO) {
 
         String username = joinDTO.getUsername();
         String password = joinDTO.getPassword();
 
-        Boolean isExist = memberRepository.existsByUsername(username);
-
-        if (isExist) {
-
-            return;
+        if (memberRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username already exists");
         }
 
         Member data = new Member();
@@ -44,6 +48,22 @@ public class MemberService {
         data.setRole("ROLE_USER");
 
         memberRepository.save(data);
+
+        return data;
+    }
+
+    public Map<String, String> generateTokens(String username, JWTUtil jwtUtil) {
+        String access = jwtUtil.createJwt("access", username, "ROLE_USER", 600000L);
+        String refresh = jwtUtil.createJwt("refresh", username, "ROLE_USER", 86400000L);
+
+        // 리프레시 토큰 저장
+        jwtUtil.addRefreshEntity(username, refresh, 86400000L);
+
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("access", access);
+        tokens.put("refresh", refresh);
+
+        return tokens;
     }
 
     public void updateMember(UpdateMemberDto updateMemberDto, int userId) {
