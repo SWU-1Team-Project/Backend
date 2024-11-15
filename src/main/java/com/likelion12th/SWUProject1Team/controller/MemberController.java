@@ -5,12 +5,17 @@ import com.likelion12th.SWUProject1Team.dto.JoinDTO;
 import com.likelion12th.SWUProject1Team.dto.PasswordDto;
 import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
+import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
 import com.likelion12th.SWUProject1Team.service.MemberService;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.Map;
 
 @Controller
 @ResponseBody
@@ -18,6 +23,8 @@ import org.springframework.web.client.HttpClientErrorException;
 public class MemberController {
 
     private final MemberService memberService;
+    @Autowired
+    private JWTUtil jwtUtil;
 
     public MemberController(MemberService memberService) {
 
@@ -25,11 +32,23 @@ public class MemberController {
     }
 
     @PostMapping("/join")
-    public String joinProcess(JoinDTO joinDTO) {
+    public ResponseEntity<String> joinProcess(JoinDTO joinDTO, HttpServletResponse response) {
 
-        memberService.joinMember(joinDTO);
+        try {
+            Member member = memberService.joinMember(joinDTO);
 
-        return "ok";
+            Map<String, String> tokens = memberService.generateTokens(member.getUsername(), jwtUtil);
+            response.setHeader("access", tokens.get("access"));
+            response.addCookie(jwtUtil.createCookie("refresh", tokens.get("refresh")));
+            response.setStatus(HttpStatus.OK.value());
+            response.setHeader("userId", member.getId() + "");
+
+            return ResponseEntity.ok().body("ok");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
+        } catch (Error e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/updateProfile/{userId}")
