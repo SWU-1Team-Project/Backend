@@ -3,10 +3,12 @@ package com.likelion12th.SWUProject1Team.controller;
 
 import com.likelion12th.SWUProject1Team.dto.JoinDTO;
 import com.likelion12th.SWUProject1Team.dto.PasswordDto;
+import com.likelion12th.SWUProject1Team.dto.TokenDto;
 import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
 import com.likelion12th.SWUProject1Team.service.MemberService;
+import com.likelion12th.SWUProject1Team.util.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,8 @@ public class MemberController {
     private final MemberService memberService;
     @Autowired
     private JWTUtil jwtUtil;
+    @Autowired
+    private CookieUtil cookieUtil;
 
     public MemberController(MemberService memberService) {
 
@@ -37,13 +41,12 @@ public class MemberController {
         try {
             Member member = memberService.joinMember(joinDTO);
 
-            Map<String, String> tokens = memberService.generateTokens(member.getUsername(), jwtUtil);
-            response.setHeader("access", tokens.get("access"));
-            response.addCookie(jwtUtil.createCookie("refresh", tokens.get("refresh")));
-            response.setStatus(HttpStatus.OK.value());
+            TokenDto tokens = memberService.generateTokens(member.getUsername(), jwtUtil);
+            response.setHeader("access", tokens.getAccessToken());
+            response.addCookie(cookieUtil.createCookie("refresh", tokens.getRefreshToken()));
             response.setHeader("userId", member.getId() + "");
 
-            return ResponseEntity.ok().body("ok");
+            return ResponseEntity.status(HttpStatus.CREATED).body("member create");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists");
         } catch (Error e) {

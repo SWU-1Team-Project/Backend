@@ -9,6 +9,7 @@ import com.likelion12th.SWUProject1Team.oauth2.CustomSuccessHandler;
 import com.likelion12th.SWUProject1Team.repository.MemberRepository;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import com.likelion12th.SWUProject1Team.service.CustomOAuth2UserService;
+import com.likelion12th.SWUProject1Team.service.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,9 +37,10 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final MemberRepository memberRepository;
+    private final ReissueService reissueService;
 
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository,
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository, ReissueService reissueService,
                           CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, MemberRepository memberRepository) {
 
         this.authenticationConfiguration = authenticationConfiguration;
@@ -47,6 +49,7 @@ public class SecurityConfig {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
         this.memberRepository = memberRepository;
+        this.reissueService = reissueService;
     }
 
     @Bean
@@ -122,7 +125,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         // 로그인 필터 등록: LoginFilter를 UsernamePasswordAuthenticationFilter 대신 등록
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, reissueService, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
