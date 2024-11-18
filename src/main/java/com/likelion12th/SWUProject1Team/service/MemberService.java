@@ -3,6 +3,7 @@ package com.likelion12th.SWUProject1Team.service;
 
 import com.likelion12th.SWUProject1Team.dto.PasswordDto;
 import com.likelion12th.SWUProject1Team.dto.JoinDTO;
+import com.likelion12th.SWUProject1Team.dto.TokenDto;
 import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
@@ -29,6 +30,8 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private final JWTUtil jwtUtil;
+    @Autowired
+    private final ReissueService reissueService;
 
 
 
@@ -52,18 +55,18 @@ public class MemberService {
         return data;
     }
 
-    public Map<String, String> generateTokens(String username, JWTUtil jwtUtil) {
+    public TokenDto generateTokens(String username, JWTUtil jwtUtil) {
         String access = jwtUtil.createJwt("access", username, "ROLE_USER", 600000L);
         String refresh = jwtUtil.createJwt("refresh", username, "ROLE_USER", 86400000L);
 
         // 리프레시 토큰 저장
-        jwtUtil.addRefreshEntity(username, refresh, 86400000L);
+        reissueService.createRefreshEntity(username, refresh, 86400000L);
 
         Map<String, String> tokens = new HashMap<>();
         tokens.put("access", access);
         tokens.put("refresh", refresh);
 
-        return tokens;
+        return new TokenDto(access, refresh);
     }
 
     public void updateMember(UpdateMemberDto updateMemberDto, int userId) {
