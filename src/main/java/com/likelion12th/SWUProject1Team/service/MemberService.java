@@ -84,6 +84,9 @@ public class MemberService {
             if (updateMemberDto.getName() != null) {
                 member.setName(updateMemberDto.getName());
             }
+            if (updateMemberDto.getBirth_date() != null) {
+                member.setBirth_date(updateMemberDto.getBirth_date());
+            }
 
             memberRepository.save(member);
         }
@@ -103,6 +106,7 @@ public class MemberService {
             updateMemberDto.setEmail(member.getEmail());
             updateMemberDto.setGender(member.getGender());
             updateMemberDto.setPhone_number(member.getPhone_number());
+            updateMemberDto.setBirth_date(member.getBirth_date());
             return updateMemberDto;
         } else {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "ID에 해당하는 멤버를 찾을 수 없습니다: " + userId);
