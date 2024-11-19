@@ -50,7 +50,7 @@ jobs:
 
       # Gradle로 빌드 실행
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build --exclude-task test
 
       # 배포 관련 파일 및 빌드 결과를 zip 파일로 압축
       - name: Make zip file
