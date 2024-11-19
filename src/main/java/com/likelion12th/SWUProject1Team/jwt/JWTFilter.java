@@ -58,9 +58,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
 // 토큰이 access인지 확인 (발급시 페이로드에 명시)
         String category = jwtUtil.getCategory(accessToken);
+        System.out.println("Category: " + category);  // 로그 추가
 
         if (!category.equals("access")) {
-
             //response body
             PrintWriter writer = response.getWriter();
             writer.print("invalid access token");

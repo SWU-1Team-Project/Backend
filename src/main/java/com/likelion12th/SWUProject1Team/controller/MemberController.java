@@ -17,8 +17,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Map;
-
 @Controller
 @ResponseBody
 @RequestMapping("/api/v1/users")

@@ -18,4 +18,5 @@ public class RefreshEntity {
     private String username;
     private String refresh;
     private String expiration;
+
 }

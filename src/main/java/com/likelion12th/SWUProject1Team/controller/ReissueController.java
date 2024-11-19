@@ -2,7 +2,6 @@ package com.likelion12th.SWUProject1Team.controller;
 
 
 import com.likelion12th.SWUProject1Team.dto.TokenDto;
-import com.likelion12th.SWUProject1Team.entity.RefreshEntity;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import com.likelion12th.SWUProject1Team.service.ReissueService;
@@ -18,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.Date;
 
 @Controller
 @ResponseBody

@@ -1,9 +1,7 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
-import com.likelion12th.SWUProject1Team.entity.RefreshEntity;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import io.jsonwebtoken.Jwts;
-import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
