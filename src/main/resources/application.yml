@@ -11,3 +11,6 @@ spring:
 
 upload:
   path: C:/Users/${USER}/upload # 최종 업로드 경로
+
+image:
+  imagefolder: /img/
