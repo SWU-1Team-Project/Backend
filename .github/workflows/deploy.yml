@@ -68,7 +68,7 @@ jobs:
       # S3에 프로젝트 업로드
       - name: Upload to S3
         run: |
-          aws s3 cp ./backend.zip s3://resume-helper
+          aws s3 cp --region ap-northeast-2 ./backend.zip s3://resume-helper
 
       # CodeDeploy를 통해 배포 실행
       - name: Trigger CodeDeploy Deployment
