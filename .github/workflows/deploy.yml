@@ -74,10 +74,10 @@ jobs:
       - name: Trigger CodeDeploy Deployment
         run: |
           aws deploy create-deployment \
-            --application-name backend-deploy \
+            --application-name test-app \
             --deployment-config-name CodeDeployDefault.OneAtATime \
-            --deployment-group-name backend-deploy-group \
-            --s3-location bucket=backend-rex-bucket,bundleType=zip,key=spring-build.zip
+            --deployment-group-name test-app \
+            --s3-location bucket=resume-helper,bundleType=zip,key=backend.zip
 
 
 
