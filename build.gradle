@@ -45,6 +45,11 @@ dependencies {
 
 	implementation 'org.json:json:20210307'
 
+	// pdf 기능
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	// https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-pdf
+	implementation group: 'org.xhtmlrenderer', name: 'flying-saucer-pdf', version: '9.9.0'
+
 }
 
 tasks.named('test') {
