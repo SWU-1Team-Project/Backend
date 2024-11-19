@@ -35,8 +35,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # application.yml 및 관련 파일 생성
-      - name: Make application.yml
+      # application.properties 파일 생성
+      - name: Make application.properties
         run: |
           cd ./src/main/resources
           touch ./application.properties
