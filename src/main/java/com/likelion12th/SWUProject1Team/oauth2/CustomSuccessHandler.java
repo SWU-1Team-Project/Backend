@@ -1,8 +1,8 @@
 package com.likelion12th.SWUProject1Team.oauth2;
 
-import com.likelion12th.SWUProject1Team.dto.CustomOAuth2User;
+import com.likelion12th.SWUProject1Team.Dto.CustomOAuth2User;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
-import com.likelion12th.SWUProject1Team.service.ReissueService;
+import com.likelion12th.SWUProject1Team.Service.ReissueService;
 import com.likelion12th.SWUProject1Team.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

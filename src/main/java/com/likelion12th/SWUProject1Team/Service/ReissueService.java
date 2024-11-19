@@ -1,9 +1,9 @@
-package com.likelion12th.SWUProject1Team.service;
+package com.likelion12th.SWUProject1Team.Service;
 
-import com.likelion12th.SWUProject1Team.dto.TokenDto;
+import com.likelion12th.SWUProject1Team.Dto.TokenDto;
 import com.likelion12th.SWUProject1Team.entity.RefreshEntity;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
-import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
+import com.likelion12th.SWUProject1Team.Repository.RefreshRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

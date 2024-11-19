@@ -1,4 +1,4 @@
-package com.likelion12th.SWUProject1Team.repository;
+package com.likelion12th.SWUProject1Team.Repository;
 
 import com.likelion12th.SWUProject1Team.entity.RefreshEntity;
 import jakarta.transaction.Transactional;

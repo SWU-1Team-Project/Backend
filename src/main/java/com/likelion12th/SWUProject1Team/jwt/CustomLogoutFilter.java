@@ -1,7 +1,7 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
 
-import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
+import com.likelion12th.SWUProject1Team.Repository.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

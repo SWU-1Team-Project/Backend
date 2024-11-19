@@ -1,13 +1,13 @@
-package com.likelion12th.SWUProject1Team.service;
+package com.likelion12th.SWUProject1Team.Service;
 
 
-import com.likelion12th.SWUProject1Team.dto.PasswordDto;
-import com.likelion12th.SWUProject1Team.dto.JoinDTO;
-import com.likelion12th.SWUProject1Team.dto.TokenDto;
-import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
+import com.likelion12th.SWUProject1Team.Dto.PasswordDto;
+import com.likelion12th.SWUProject1Team.Dto.JoinDTO;
+import com.likelion12th.SWUProject1Team.Dto.TokenDto;
+import com.likelion12th.SWUProject1Team.Dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
-import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.Repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,6 @@ public class MemberService {
     private final JWTUtil jwtUtil;
     @Autowired
     private final ReissueService reissueService;
-
 
 
     public Member joinMember(JoinDTO joinDTO) {

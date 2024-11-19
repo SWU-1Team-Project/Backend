@@ -1,13 +1,13 @@
 package com.likelion12th.SWUProject1Team.controller;
 
 
-import com.likelion12th.SWUProject1Team.dto.JoinDTO;
-import com.likelion12th.SWUProject1Team.dto.PasswordDto;
-import com.likelion12th.SWUProject1Team.dto.TokenDto;
-import com.likelion12th.SWUProject1Team.dto.UpdateMemberDto;
+import com.likelion12th.SWUProject1Team.Dto.JoinDTO;
+import com.likelion12th.SWUProject1Team.Dto.PasswordDto;
+import com.likelion12th.SWUProject1Team.Dto.TokenDto;
+import com.likelion12th.SWUProject1Team.Dto.UpdateMemberDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.jwt.JWTUtil;
-import com.likelion12th.SWUProject1Team.service.MemberService;
+import com.likelion12th.SWUProject1Team.Service.MemberService;
 import com.likelion12th.SWUProject1Team.util.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

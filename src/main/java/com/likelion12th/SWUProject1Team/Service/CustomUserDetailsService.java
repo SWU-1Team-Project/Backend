@@ -1,8 +1,8 @@
-package com.likelion12th.SWUProject1Team.service;
+package com.likelion12th.SWUProject1Team.Service;
 
-import com.likelion12th.SWUProject1Team.dto.CustomUserDetails;
+import com.likelion12th.SWUProject1Team.Dto.CustomUserDetails;
 import com.likelion12th.SWUProject1Team.entity.Member;
-import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.Repository.MemberRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

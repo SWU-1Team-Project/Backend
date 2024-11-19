@@ -1,4 +1,4 @@
-package com.likelion12th.SWUProject1Team.dto;
+package com.likelion12th.SWUProject1Team.Dto;
 
 import java.util.Map;
 

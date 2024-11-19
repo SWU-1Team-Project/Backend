@@ -1,6 +1,6 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
-import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
+import com.likelion12th.SWUProject1Team.Repository.RefreshRepository;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,5 +64,4 @@ public class JWTUtil {
                 .signWith(secretKey)        // 암호화 진행
                 .compact();
     }
-
 }

@@ -1,12 +1,11 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
-import com.likelion12th.SWUProject1Team.repository.MemberRepository;
-import com.likelion12th.SWUProject1Team.service.ReissueService;
+import com.likelion12th.SWUProject1Team.Repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.Service.ReissueService;
 import com.likelion12th.SWUProject1Team.util.CookieUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {

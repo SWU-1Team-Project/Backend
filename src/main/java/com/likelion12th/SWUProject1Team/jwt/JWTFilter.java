@@ -1,7 +1,7 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
 
-import com.likelion12th.SWUProject1Team.dto.CustomUserDetails;
+import com.likelion12th.SWUProject1Team.Dto.CustomUserDetails;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;

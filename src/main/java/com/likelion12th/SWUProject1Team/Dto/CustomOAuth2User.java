@@ -1,4 +1,4 @@
-package com.likelion12th.SWUProject1Team.dto;
+package com.likelion12th.SWUProject1Team.Dto;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;

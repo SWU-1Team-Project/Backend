@@ -1,11 +1,11 @@
-package com.likelion12th.SWUProject1Team.service;
+package com.likelion12th.SWUProject1Team.Service;
 
-import com.likelion12th.SWUProject1Team.dto.CustomOAuth2User;
-import com.likelion12th.SWUProject1Team.dto.GoogleResponse;
-import com.likelion12th.SWUProject1Team.dto.OAuth2Response;
-import com.likelion12th.SWUProject1Team.dto.Oauth2UserDto;
+import com.likelion12th.SWUProject1Team.Dto.CustomOAuth2User;
+import com.likelion12th.SWUProject1Team.Dto.GoogleResponse;
+import com.likelion12th.SWUProject1Team.Dto.OAuth2Response;
+import com.likelion12th.SWUProject1Team.Dto.Oauth2UserDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
-import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.Repository.MemberRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
