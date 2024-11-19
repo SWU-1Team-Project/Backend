@@ -15,7 +15,8 @@ import java.time.LocalDate;
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "member_id")
+    private int memberId;
 
     @Column(unique = true)
     private String email;
