@@ -44,7 +44,7 @@ public class MemberController {
             TokenDto tokens = memberService.generateTokens(member.getUsername(), jwtUtil);
             response.setHeader("access", tokens.getAccessToken());
             response.addCookie(cookieUtil.createCookie("refresh", tokens.getRefreshToken()));
-            response.setHeader("userId", member.getId() + "");
+            response.setHeader("userId", member.getMemberId() + "");
 
             return ResponseEntity.status(HttpStatus.CREATED).body("member create");
         } catch (IllegalArgumentException e) {

@@ -64,7 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // userId 추출
-        int userId = memberRepository.findByUsername(username).getId();
+        int userId = memberRepository.findByUsername(username).getMemberId();
 
 
         System.out.println("LoginFilter username: " + username);
