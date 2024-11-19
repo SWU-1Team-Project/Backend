@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>이력서 및 자기소개서</title>
+    <style>
+        body {
+            font-family: "NanumGothic", 'sans-serif';
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+
+        /* 프로필 테이블 스타일 (사진과 개인정보를 감싸는 테이블) */
+        .profile-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .profile-table th, .profile-table td {
+            border: none; /* 테두리 제거 */
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        .photo-cell {
+            width: 25%;
+            text-align: center;
+            vertical-align: top;
+        }
+        .photo {
+            width: 140px;
+            height: 210px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        .info-table {
+            width: 75%;
+        }
+
+        /* 개인정보 테이블에 테두리 추가 */
+        .info-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .info-table th, .info-table td {
+            border: 1px solid #ddd; /* 테두리 추가 */
+            padding: 8px;
+            text-align: left;
+        }
+        .info-table th {
+            background-color: #f2f2f2;
+        }
+
+        /* 기본 테이블 스타일 */
+        table.default-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table.default-table th, table.default-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        table.default-table th {
+            background-color: #f2f2f2;
+        }
+
+        /* 자기소개서 섹션 스타일 */
+        .introduction-section {
+            margin-top: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .section-content {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <!-- 이력서 섹션 -->
+    <h1>이력서</h1>
+    <div class="section">
+        <!-- 프로필 섹션 (사진 + 개인정보 입력란) -->
+        <table class="profile-table">
+            <tr>
+                <!-- 사진 영역 -->
+                <td class="photo-cell">
+                    <img th:src="@{${member_img}}" alt="증명사진" class="photo"/>
+                </td>
+
+                <!-- 개인정보 입력란 -->
+                <td class="info-table">
+                    <table>
+                        <tr>
+                            <th>성명</th>
+                            <td th:text="${member_name}"></td>
+                        </tr>
+                        <tr>
+                            <th>생년월일</th>
+                            <td th:text="${member_birth}"></td>
+                        </tr>
+                        <tr>
+                            <th>핸드폰</th>
+                            <td th:text="${member_phone}"></td>
+                        </tr>
+                        <tr>
+                            <th>E-mail</th>
+                            <td th:text="${member_email}"></td>
+                        </tr>
+                        <tr>
+                            <th>현주소</th>
+                            <td th:text="${member_addr}"></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 학력사항 -->
+    <div class="section">
+        <h3>학력사항</h3>
+        <table class="default-table">
+            <thead>
+            <tr>
+                <th>구분</th>
+                <th>학교명(지역)</th>
+                <th>상태</th>
+                <th>재학기간</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="academicInfo : ${academicInfo}">
+                <td th:text="${academicInfo.type}"></td>
+                <td th:text="${academicInfo.schoolName}"></td>
+                <td th:text="${academicInfo.graduationStatus}"></td>
+                <td th:text="${academicInfo.startDate} + ' ~ ' + (${academicInfo.endDate != null ? academicInfo.endDate : '현재'})"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 경력사항 -->
+    <div class="section">
+        <h3>경력사항</h3>
+        <table class="default-table">
+            <thead>
+            <tr>
+                <th>회사명</th>
+                <th>담당업무</th>
+                <th>현재 재직 중 여부</th>
+                <th>근무기간</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="workExperience : ${workExperiences}">
+                <td th:text="${workExperience.companyName}"></td>
+                <td th:text="${workExperience.responsibilities}"></td>
+                <td th:text="${workExperience.isCurrent ? '재직 중' : '퇴사'}"></td>
+                <td th:text="${workExperience.startDate} + ' ~ ' + (${workExperience.endDate != null ? workExperience.endDate : '현재'})"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 보유기술 및 자격증 -->
+    <div class="section">
+        <h3>보유기술 및 자격증</h3>
+        <table class="default-table">
+            <thead>
+            <tr>
+                <th>자격증 이름</th>
+                <th>취득일자</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cert : ${certifications}">
+                <td th:text="${cert.name}"></td>
+                <td th:text="${cert.date}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 성격 및 강점 -->
+    <div class="section">
+        <h3>성격 및 강점</h3>
+        <ul>
+            <li th:each="s : ${strengths}" th:text="${s}"></li>
+        </ul>
+    </div>
+
+    <!-- 자기소개서 섹션 -->
+    <div class="introduction-section">
+        <h1>자기소개서</h1>
+
+        <div class="section-content">
+            <div class="section-title">성장과정</div>
+            <p th:text="${growthProcess}"></p>
+        </div>
+
+        <div class="section-content">
+            <div class="section-title">성격소개</div>
+            <p th:text="${personality}"></p>
+        </div>
+
+        <div class="section-content">
+            <div class="section-title">지원동기</div>
+            <p th:text="${reason}"></p>
+        </div>
+
+        <div class="section-content">
+            <div class="section-title">희망업무 및 포부</div>
+            <p th:text="${job}"></p>
+        </div>
+
+        <div class="section-content">
+            <div class="section-title">특기사항</div>
+            <p th:text="${specialNote}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
