@@ -15,7 +15,7 @@ jobs:
 
     steps:
       # Git 저장소를 체크아웃합니다.
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # JDK를 17 버전으로 셋팅합니다.
       - name: Set up JDK 17
@@ -26,7 +26,7 @@ jobs:
 
       # Gradle을 캐싱하여 빌드 속도를 최적화합니다.
       - name: Cache Gradle
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-gradle-
 
       # 프로젝트 환경설정 파일 생성
-      - name: Make application.yml
+      - name: Make application.properties
         run: |
           cd ./src/main/resources
           touch ./application.properties
@@ -68,7 +68,7 @@ jobs:
       # S3에 프로젝트 업로드
       - name: Upload to S3
         run: |
-          aws s3 cp ./spring-build.zip s3://backend-rex-bucket
+          aws s3 cp ./backend.zip s3://resume-helper
 
       # CodeDeploy를 통해 배포 실행
       - name: Trigger CodeDeploy Deployment
