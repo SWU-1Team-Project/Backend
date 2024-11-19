@@ -74,11 +74,7 @@ jobs:
       - name: Trigger CodeDeploy Deployment
         run: |
           aws deploy create-deployment \
-<<<<<<< Updated upstream
             --application-name test-app \
-=======
-            --application-name resume-helper \
->>>>>>> Stashed changes
             --deployment-config-name CodeDeployDefault.OneAtATime \
             --deployment-group-name test-app \
             --s3-location bucket=resume-helper.files,bundleType=zip,key=backend.zip
