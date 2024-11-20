@@ -44,7 +44,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
 	implementation 'org.json:json:20210307'
-	runtimeOnly 'mysql:mysql-connector-java'
+//	runtimeOnly 'mysql:mysql-connector-java'
 
 	implementation 'org.jsoup:jsoup:1.15.3'
 
