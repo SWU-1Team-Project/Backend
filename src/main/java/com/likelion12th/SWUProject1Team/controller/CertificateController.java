@@ -1,7 +1,7 @@
 package com.likelion12th.SWUProject1Team.controller;
 
-import com.likelion12th.SWUProject1Team.Dto.CertificateDto;
-import com.likelion12th.SWUProject1Team.Service.CertificateService;
+import com.likelion12th.SWUProject1Team.dto.CertificateDto;
+import com.likelion12th.SWUProject1Team.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

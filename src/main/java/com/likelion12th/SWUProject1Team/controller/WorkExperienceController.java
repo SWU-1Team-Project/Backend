@@ -1,7 +1,7 @@
 package com.likelion12th.SWUProject1Team.controller;
 
-import com.likelion12th.SWUProject1Team.Dto.WorkExperienceDto;
-import com.likelion12th.SWUProject1Team.Service.WorkExperienceService;
+import com.likelion12th.SWUProject1Team.dto.WorkExperienceDto;
+import com.likelion12th.SWUProject1Team.service.WorkExperienceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

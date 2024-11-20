@@ -1,15 +1,15 @@
 package com.likelion12th.SWUProject1Team.controller;
 
-import com.likelion12th.SWUProject1Team.Dto.CertificateDto;
-import com.likelion12th.SWUProject1Team.Dto.ResumeDto;
+import com.likelion12th.SWUProject1Team.dto.CertificateDto;
+import com.likelion12th.SWUProject1Team.dto.ResumeDto;
 import com.likelion12th.SWUProject1Team.entity.AcademicInfo;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.entity.Resume;
 import com.likelion12th.SWUProject1Team.entity.WorkExperience;
-import com.likelion12th.SWUProject1Team.Repository.AddressRepository;
-import com.likelion12th.SWUProject1Team.Service.AcademicInfoService;
-import com.likelion12th.SWUProject1Team.Service.ResumeService;
-import com.likelion12th.SWUProject1Team.Service.WorkExperienceService;
+import com.likelion12th.SWUProject1Team.repository.AddressRepository;
+import com.likelion12th.SWUProject1Team.service.AcademicInfoService;
+import com.likelion12th.SWUProject1Team.service.ResumeService;
+import com.likelion12th.SWUProject1Team.service.WorkExperienceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

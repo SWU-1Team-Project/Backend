@@ -1,7 +1,7 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
-import com.likelion12th.SWUProject1Team.Repository.MemberRepository;
-import com.likelion12th.SWUProject1Team.Service.ReissueService;
+import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.service.ReissueService;
 import com.likelion12th.SWUProject1Team.util.CookieUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;

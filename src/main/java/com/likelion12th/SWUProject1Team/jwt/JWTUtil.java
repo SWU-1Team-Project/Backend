@@ -1,6 +1,6 @@
 package com.likelion12th.SWUProject1Team.jwt;
 
-import com.likelion12th.SWUProject1Team.Repository.RefreshRepository;
+import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
