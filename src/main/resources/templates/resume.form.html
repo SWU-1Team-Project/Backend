@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이력서 생성</title>
+    <script>
+        async function createResume() {
+            const resumeData = {
+                memberId: document.getElementById("memberId").value,
+                title: document.getElementById("title").value,
+                profileImage: document.getElementById("profileImage").value,
+                isExperienced: document.getElementById("isExperienced").checked,
+                strengths: document.getElementById("strengths").value.split(","),
+                postcode: document.getElementById("postcode").value,
+                roadAddress: document.getElementById("roadAddress").value,
+                detailAddress: document.getElementById("detailAddress").value,
+                academicInfoList: [
+                    {
+                        schoolName: document.getElementById("schoolName").value,
+                        startDate: document.getElementById("startDate").value,
+                        endDate: document.getElementById("endDate").value,
+                        graduationStatus: document.getElementById("graduationStatus").value
+                    }
+                ],
+                workExperienceList: [
+                    {
+                        companyName: document.getElementById("companyName").value,
+                        startDate: document.getElementById("workStartDate").value,
+                        endDate: document.getElementById("workEndDate").value,
+                        isCurrent: document.getElementById("isCurrent").checked
+                    }
+                ]
+            };
+
+            const response = await fetch("/api/resume/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(resumeData)
+            });
+
+            const result = await response.json();
+            document.getElementById("output").innerText = result.message;
+        }
+    </script>
+</head>
+<body>
+<h1>이력서 생성</h1>
+<label>회원 ID:</label> <input type="number" id="memberId"><br>
+<label>이력서 제목:</label> <input type="text" id="title"><br>
+<label>프로필 이미지 경로:</label> <input type="text" id="profileImage"><br>
+<label>경력 여부:</label> <input type="checkbox" id="isExperienced"><br>
+<label>강점 (쉼표로 구분):</label> <input type="text" id="strengths"><br>
+<label>우편번호:</label> <input type="text" id="postcode"><br>
+<label>도로명 주소:</label> <input type="text" id="roadAddress"><br>
+<label>상세 주소:</label> <input type="text" id="detailAddress"><br>
+
+<h3>학력 정보</h3>
+<label>학교 이름:</label> <input type="text" id="schoolName"><br>
+<label>입학 날짜:</label> <input type="date" id="startDate"><br>
+<label>졸업 날짜:</label> <input type="date" id="endDate"><br>
+<label>졸업 상태:</label> <input type="text" id="graduationStatus"><br>
+
+<h3>경력 사항</h3>
+<label>회사 이름:</label> <input type="text" id="companyName"><br>
+<label>시작 날짜:</label> <input type="date" id="workStartDate"><br>
+<label>종료 날짜:</label> <input type="date" id="workEndDate"><br>
+<label>현재 재직 중:</label> <input type="checkbox" id="isCurrent"><br>
+
+<button onclick="createResume()">이력서 생성</button>
+<p id="output"></p>
+</body>
+</html>
