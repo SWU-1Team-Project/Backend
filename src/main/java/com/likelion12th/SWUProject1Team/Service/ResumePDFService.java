@@ -39,7 +39,7 @@ public class ResumePDFService {
             // 데이터를 Map에 담기
             Map<String, Object> map = new HashMap<>();
             map.put("member_name", member.getName());
-            map.put("member_img", "test_image.jpg"); // member 이미지 가져오기
+            map.put("member_img", "file:" + resume.getProfileImage()); // member 이미지 가져오기
             map.put("member_birth", member.getBirth_date());
             map.put("member_phone", member.getPhone_number());
             map.put("member_email", member.getEmail());
@@ -60,7 +60,7 @@ public class ResumePDFService {
             SharedContext sharedContext = renderer.getSharedContext();
             sharedContext.setPrint(true);
             sharedContext.setInteractive(false);
-            sharedContext.setReplacedElementFactory(imgReplaceElementFactory);
+//            sharedContext.setReplacedElementFactory(imgReplaceElementFactory);
             sharedContext.getTextRenderer().setSmoothingThreshold(0);
 
             // 폰트 설정
