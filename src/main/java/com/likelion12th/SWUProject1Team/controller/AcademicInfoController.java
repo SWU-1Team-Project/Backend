@@ -1,10 +1,10 @@
 package com.likelion12th.SWUProject1Team.controller;
 
-import com.likelion12th.SWUProject1Team.Dto.SchoolInfo;
+import com.likelion12th.SWUProject1Team.dto.SchoolInfo;
 import com.likelion12th.SWUProject1Team.entity.AcademicInfo;
 import com.likelion12th.SWUProject1Team.entity.Resume;
-import com.likelion12th.SWUProject1Team.Repository.ResumeRepository;
-import com.likelion12th.SWUProject1Team.Service.AcademicInfoService;
+import com.likelion12th.SWUProject1Team.repository.ResumeRepository;
+import com.likelion12th.SWUProject1Team.service.AcademicInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
