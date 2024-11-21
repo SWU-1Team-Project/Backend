@@ -25,8 +25,11 @@ public class ResumeDto {
     private String roadAddress;
     private String detailAddress;
 
-    private List<AcademicInfo> academicInfoList;
-    private List<WorkExperience> workExperienceList;
+    public String getFullAddress;
+
+    private List<AcademicInfoDto> academicInfoList;
+    private List<WorkExperienceDto> workExperienceList;
+
     private List<CertificateDto> certifications;
     // private List<Certification> certifications;
     private List<String> strengths;
@@ -39,5 +42,6 @@ public class ResumeDto {
     private String reason;
     private String job;
     private String specialNote;
+
 
 }

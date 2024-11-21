@@ -1,7 +1,6 @@
-#spring:
-#  profiles:
-#    include: mysql, jwt, oauth
-#  servlet:
+spring:
+ profiles:
+   include: mysql, jwt, oauth
 #    multipart:
 #      enabled: true
 #      max-file-size: 10MB

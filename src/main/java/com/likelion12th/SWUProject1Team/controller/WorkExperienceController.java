@@ -17,7 +17,7 @@ public class WorkExperienceController {
 
     // 단일 경력 추가
     @PostMapping
-    public ResponseEntity<String> addWorkExperience(@PathVariable Long resumeId, @RequestBody WorkExperienceDto workExperienceDto) {
+    public ResponseEntity<String> addWorkExperience(@PathVariable Integer resumeId, @RequestBody WorkExperienceDto workExperienceDto) {
         workExperienceDto.setResumeId(resumeId);  // resumeId 설정
         workExperienceService.saveWorkExperience(workExperienceDto);
         return ResponseEntity.ok("경력 사항이 성공적으로 추가되었습니다");
@@ -25,7 +25,7 @@ public class WorkExperienceController {
 
     // 여러 경력 정보 저장
     @PostMapping("/batchsave")
-    public ResponseEntity<String> saveExperiences(@PathVariable Long resumeId, @RequestBody List<WorkExperienceDto> experiences) {
+    public ResponseEntity<String> saveExperiences(@PathVariable Integer resumeId, @RequestBody List<WorkExperienceDto> experiences) {
         System.out.println("Received experiences: " + experiences);
         experiences.forEach(exp -> exp.setResumeId(resumeId));  // 각 DTO에 resumeId 설정
         workExperienceService.saveWorkExperiences(experiences);
@@ -34,14 +34,14 @@ public class WorkExperienceController {
 
     // 총 경력 조회
     @GetMapping("/total")
-    public ResponseEntity<String> getTotalWorkExperience(@PathVariable Long resumeId) {
+    public ResponseEntity<String> getTotalWorkExperience(@PathVariable Integer resumeId) {
         String totalExperience = workExperienceService.calculateTotalExperience(resumeId);
         return ResponseEntity.ok("총 경력 기간: " + totalExperience);
     }
 
     // 단일 경력 삭제
     @DeleteMapping("/delete/{workExperienceId}")
-    public ResponseEntity<String> deleteWorkExperience(@PathVariable Long resumeId, @PathVariable Long workExperienceId) {
+    public ResponseEntity<String> deleteWorkExperience(@PathVariable Integer resumeId, @PathVariable Integer workExperienceId) {
         workExperienceService.deleteWorkExperience(resumeId, workExperienceId);
         return ResponseEntity.ok("경력 사항이 성공적으로 삭제되었습니다.");
     }

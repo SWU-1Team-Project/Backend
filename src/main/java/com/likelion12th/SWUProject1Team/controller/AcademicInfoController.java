@@ -66,7 +66,7 @@ public class AcademicInfoController {
 
     // 특정 이력서에 학력 정보 추가
     @PostMapping("/add")
-    public ResponseEntity<String> addAcademicInfo(@PathVariable Long resumeId, @RequestBody AcademicInfo academicInfo) {
+    public ResponseEntity<String> addAcademicInfo(@PathVariable Integer resumeId, @RequestBody AcademicInfo academicInfo) {
         System.out.println("Received AcademicInfo: " + academicInfo);
 
         // 이력서 조회

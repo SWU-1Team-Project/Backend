@@ -1,8 +1,6 @@
 package com.likelion12th.SWUProject1Team.service;
 
-import com.likelion12th.SWUProject1Team.dto.CertificateDto;
-import com.likelion12th.SWUProject1Team.dto.ResumeDto;
-import com.likelion12th.SWUProject1Team.dto.WorkExperienceDto;
+import com.likelion12th.SWUProject1Team.dto.*;
 import com.likelion12th.SWUProject1Team.entity.*;
 import com.likelion12th.SWUProject1Team.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +32,334 @@ public class ResumeService {
     private final MemberRepository memberRepository;
     private final OcrApiService ocrApiService;
 
+    private AcademicInfo convertToAcademicInfo(AcademicInfoDto dto, Resume resume) {
+        return new AcademicInfo(dto, resume);
+    }
+
+    // Dto를 WorkExperience 엔티티로 변환
+    private WorkExperience convertToWorkExperience(WorkExperienceDto dto, Resume resume) {
+        return new WorkExperience(dto, resume);
+    }
+
+    // 이력서 필수 항목 생성하기
     @Transactional
-    public ResumeDto createResume(ResumeDto resumeDto, Integer memberId) { // 이력서 생성
+    public Resume createResumeForMember(int userId, ResumeRequestDto request) {
+        // 1. Member 정보 가져오기
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + userId));
+
+        validateRequiredFields(request);
+
+        // 2. Resume 생성
+        Resume resume = new Resume();
+        resume.setMember(member);
+        resume.setTitle(request.getTitle());
+        resume.setProfileImage(request.getProfileImage());
+        resume.setPostcode(request.getPostcode());
+        resume.setRoadAddress(request.getRoadAddress());
+        resume.setDetailAddress(request.getDetailAddress());
+        resume.setIsExperienced(request.getIsExperienced());
+        resume.setStrengths(request.getStrengths());
+
+        // 3. AcademicInfo 설정
+        List<AcademicInfo> academicInfos = request.getAcademicInfoList().stream()
+                .map(dto -> convertToAcademicInfo(dto, resume))
+                .collect(Collectors.toList());
+        resume.setAcademicInfoList(academicInfos);
+
+        // 4. WorkExperience 설정
+        if (Boolean.TRUE.equals(request.getIsExperienced())) {
+            List<WorkExperience> workExperiences = request.getWorkExperienceList().stream()
+                    .map(dto -> convertToWorkExperience(dto, resume))
+                    .collect(Collectors.toList());
+            resume.setWorkExperienceList(workExperiences);
+        } else {
+            resume.setWorkExperienceList(Collections.emptyList());
+        }
+
+        // 5. Resume 저장
+        return resumeRepository.save(resume);
+    }
+
+    private void validateRequiredFields(ResumeRequestDto request) {
+        if (request.getTitle() == null || request.getPostcode() == null || request.getRoadAddress() == null
+                || request.getDetailAddress() == null || request.getStrengths() == null || request.getStrengths().size() < 1) {
+            throw new IllegalArgumentException("모든 필수 항목을 작성해야 합니다.");
+        }
+
+        // 경력 사항 검증
+        if (Boolean.TRUE.equals(request.getIsExperienced())) {
+            if (request.getWorkExperienceList() == null || request.getWorkExperienceList().isEmpty()) {
+                throw new IllegalArgumentException("경력자라면 최소 1개의 경력 사항을 입력해야 합니다.");
+            }
+        }
+    }
+
+    // 특정 Resume 조회
+    public ResumeDto getResumeById(Integer resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
+
+        return convertToDto(resume);
+    }
+
+    // 특정 User의 모든 Resume 조회
+    public List<ResumeDto> getResumesByUserId(int userId) {
+        List<Resume> resumes = resumeRepository.findByMember_MemberId(userId);
+        return resumes.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    // Resume -> ResumeDto 변환
+    private ResumeDto convertToDto(Resume resume) {
+        ResumeDto resumeDto = new ResumeDto();
+
+        // 기본 필드 설정
+        resumeDto.setId(resume.getId());
+        resumeDto.setTitle(resume.getTitle());
+        resumeDto.setProfileImage(resume.getProfileImage());
+        resumeDto.setIsExperienced(resume.getIsExperienced());
+        resumeDto.setPostcode(resume.getPostcode());
+        resumeDto.setRoadAddress(resume.getRoadAddress());
+        resumeDto.setDetailAddress(resume.getDetailAddress());
+
+        resumeDto.setGrowthProcess(resume.getGrowthProcess());
+        resumeDto.setPersonality(resume.getPersonality());
+        resumeDto.setReason(resume.getReason());
+        resumeDto.setJob(resume.getJob());
+        resumeDto.setSpecialNote(resume.getSpecialNote());
+        resumeDto.setStrengths(resume.getStrengths());
+
+        // 학력 정보 변환
+        List<AcademicInfoDto> academicInfoDtos = resume.getAcademicInfoList().stream()
+                .map(info -> new AcademicInfoDto(info.getSchoolName(), info.getType(), info.getStartDate(), info.getEndDate(), info.getGraduationStatus()))
+                .collect(Collectors.toList());
+        resumeDto.setAcademicInfoList(academicInfoDtos);
+
+        // 경력 정보 변환
+        List<WorkExperienceDto> workExperienceDtos = resume.getWorkExperienceList().stream()
+                .map(exp -> new WorkExperienceDto(exp.getCompanyName(), exp.getStartDate(), exp.getEndDate(), exp.getResponsibilities()))
+                .collect(Collectors.toList());
+        resumeDto.setWorkExperienceList(workExperienceDtos);
+
+        // 자격증 정보 변환
+        List<CertificateDto> certifications = resume.getCertifications().stream()
+                .map(cert -> new CertificateDto(cert.getName(), cert.getDate()))
+                .collect(Collectors.toList());
+        resumeDto.setCertifications(certifications);
+
+        // Member 정보 변환
+        if (resume.getMember() != null) {
+            resumeDto.setName(resume.getMember().getName());
+            resumeDto.setEmail(resume.getMember().getEmail());
+            resumeDto.setPhone_Number(resume.getMember().getPhone_number());
+            resumeDto.setGender(resume.getMember().getGender());
+        }
+
+        // 총 경력 기간 설정
+        String totalExperience = workExperienceService.calculateTotalExperience((resume.getId()));
+        resumeDto.setTotalExperience(totalExperience);
+
+        return resumeDto;
+    }
+
+    @Transactional
+    public ResumeDto updateResume(Integer resumeId, ResumeRequestDto request) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
+
+        // 필드 업데이트
+        resume.setTitle(request.getTitle());
+        resume.setPostcode(request.getPostcode());
+        resume.setRoadAddress(request.getRoadAddress());
+        resume.setDetailAddress(request.getDetailAddress());
+        resume.setStrengths(request.getStrengths());
+
+        if (Boolean.TRUE.equals(request.getIsExperienced())) {
+            // 기존 경력 삭제 및 새로운 경력 추가
+            resume.getWorkExperienceList().clear();
+            List<WorkExperience> workExperiences = request.getWorkExperienceList().stream()
+                    .map(dto -> convertToWorkExperience(dto, resume))
+                    .collect(Collectors.toList());
+            resume.setWorkExperienceList(workExperiences);
+        }
+
+        if (request.getAcademicInfoList() != null) {
+            // 기존 학력 삭제 및 새로운 학력 추가
+            resume.getAcademicInfoList().clear();
+            List<AcademicInfo> academicInfos = request.getAcademicInfoList().stream()
+                    .map(dto -> convertToAcademicInfo(dto, resume))
+                    .collect(Collectors.toList());
+            resume.setAcademicInfoList(academicInfos);
+        }
+
+        // 저장 후 DTO 변환하여 반환
+        return convertToDto(resume);
+    }
+
+    // 추가 자기소개서 항목 작성하기
+    public ResumeDto addAdditionalFields(Integer resumeId, ResumeDto resumeDto) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("이력서를 찾을 수 없습니다."));
+
+        // 추가 항목 업데이트
+        if (resumeDto.getGrowthProcess() != null) resume.setGrowthProcess(resumeDto.getGrowthProcess());
+        if (resumeDto.getPersonality() != null) resume.setPersonality(resumeDto.getPersonality());
+        if (resumeDto.getReason() != null) resume.setReason(resumeDto.getReason());
+        if (resumeDto.getJob() != null) resume.setJob(resumeDto.getJob());
+        if (resumeDto.getSpecialNote() != null) resume.setSpecialNote(resumeDto.getSpecialNote());
+
+        resumeRepository.save(resume);
+
+        return convertToDto(resume);
+    }
+
+    // 프로필 이미지 업로드
+
+    @Transactional
+    public String saveProfileImage(Integer userId, MultipartFile file) throws IOException {
+        // 파일 유효성 검사
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("파일이 비어 있습니다.");
+        }
+
+        // 업로드 경로가 존재하지 않으면 생성
+        File directory = new File(uploadPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+            System.out.println("Upload directory created at: " + uploadPath); // 디렉토리 생성 여부 확인
+        }
+
+        // 저장할 파일 이름 설정
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String filePath = uploadPath + File.separator + fileName; // OS에 따라 경로 구분자 처리
+        System.out.println("File will be saved at: " + filePath); // 저장될 파일 경로 확인
+
+        // 파일 저장
+        File dest = new File(filePath);
+        file.transferTo(dest);
+        System.out.println("File transferred to: " + dest.getAbsolutePath()); // 파일 전송 확인
+
+        // 해당 회원의 이력서 정보 가져오기
+        Resume resume = resumeRepository.findByMember_MemberId(userId)
+                .stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원의 이력서가 없습니다."));
+
+        // 프로필 이미지 경로 설정 및 저장
+        resume.setProfileImage("/uploads/" + fileName); // DB에 저장될 경로는 서버 기준 경로로 설정
+        resumeRepository.save(resume);
+        System.out.println("Resume Retrieved: " + resume); // 이력서 조회 결과 확인
+
+        return "/uploads/" + fileName;
+    }
+
+    @Transactional
+    public void deleteResume(Integer resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
+
+        // 이력서 삭제
+        resumeRepository.delete(resume);
+    }
+
+    @Transactional
+    public void addCertificates(Integer resumeId, List<CertificateDto> certificateDtos) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
+
+        List<Certification> certifications = certificateDtos.stream()
+                .map(dto -> new Certification(dto.getName(), dto.getDate(), resume))
+                .collect(Collectors.toList());
+
+        // 자격증을 추가하여 누적 저장
+        certificateRepository.saveAll(certifications);
+    }
+
+    // 특정 회원의 최근 작성 일자 바탕으로 조회
+    public ResumeDto getLatestResumeByMemberId(Integer memberId) {
+        List<Resume> resumes = resumeRepository.findByMember_MemberId(memberId);
+        if (resumes.isEmpty()) {
+            throw new IllegalArgumentException("No resumes found for Member ID: " + memberId);
+        }
+        Resume latestResume = resumes.get(0); // 최신 이력서를 찾는 로직 (필요 시 정렬 추가)
+        return convertToDto(latestResume);
+    }
+
+    public Map<String, Object> getPersonalInfo(Integer memberId) {
+        // 회원 정보 가져오기
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + memberId));
+
+        // 해당 회원의 이력서 정보 가져오기
+        Resume resume = resumeRepository.findByMember_MemberId(memberId)
+                .stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found for Member ID: " + memberId));
+
+        // 정보를 맵 형태로 반환
+        Map<String, Object> personalInfo = new HashMap<>();
+        personalInfo.put("name", member.getName());
+        personalInfo.put("email", member.getEmail());
+        personalInfo.put("phone_number", member.getPhone_number());
+        personalInfo.put("gender", member.getGender());
+        personalInfo.put("profileImage", resume.getProfileImage());
+        // personalInfo.put("birth_date", member.getBirth_date());
+        personalInfo.put("address", resume.getRoadAddress() + " " + resume.getDetailAddress());
+
+        return personalInfo;
+    }
+
+    // 새로운 경력 정보 추가 시 총 경력 계산 및 저장
+    @Transactional
+    public void addWorkExperience(WorkExperienceDto dto) {
+        Resume resume = resumeRepository.findById(dto.getResumeId())
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
+
+        WorkExperience experience = new WorkExperience();
+        experience.setCompanyName(dto.getCompanyName());
+        experience.setStartDate(dto.getStartDate());
+        experience.setEndDate(dto.getEndDate());
+        experience.setIsCurrent(dto.getIsCurrent());
+        experience.setResponsibilities(dto.getResponsibilities());
+        experience.setResume(resume);
+
+        // 경력 기간 계산
+        int months = experience.calculateDurationInMonths();
+
+        // 총 경력 누적 계산
+        String previousTotal = resume.getTotalExperience();
+        int previousMonths = convertExperienceToMonths(previousTotal);
+        int newTotalMonths = previousMonths + months;
+
+        // 누적된 총 경력 기간 업데이트
+        String totalExperience = convertMonthsToExperience(newTotalMonths);
+        resume.setTotalExperience(totalExperience);
+
+        // 저장
+        workExperienceRepository.save(experience);
+        resumeRepository.save(resume);
+    }
+
+    // 문자열 "00년 00개월" 형식을 월 수로 변환
+    private int convertExperienceToMonths(String experience) {
+        if (experience == null || experience.isEmpty()) return 0;
+        String[] parts = experience.split(" ");
+        int years = Integer.parseInt(parts[0].replace("년", ""));
+        int months = Integer.parseInt(parts[1].replace("개월", ""));
+        return years * 12 + months;
+    }
+
+    // 월 수를 "00년 00개월" 형식으로 변환
+    private String convertMonthsToExperience(int totalMonths) {
+        int years = totalMonths / 12;
+        int months = totalMonths % 12;
+        return years + "년 " + months + "개월";
+    }
+}
+
+/*
+    @Transactional
+    public ResumeDto createResume(ResumeDto resumeDto, int memberId) { // 이력서 생성
 
         // 1. 멤버 정보 가져오기
         Member member = memberRepository.findById(memberId)
@@ -192,44 +516,6 @@ public class ResumeService {
     public Member getMemberInfo(Integer memberId) {
         return memberRepository.findById(memberId)
                 .orElse(null);
-    }
-
-    // 프로필 이미지 저장 메서드 - 2번 항목
-    @Transactional
-    public String saveProfileImage(Integer memberId, MultipartFile file) throws IOException {
-        // 파일 유효성 검사
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비어 있습니다.");
-        }
-
-        // 업로드 경로가 존재하지 않으면 생성
-        File directory = new File(uploadPath);
-        if (!directory.exists()) {
-            directory.mkdirs();
-            System.out.println("Upload directory created at: " + uploadPath); // 디렉토리 생성 여부 확인
-        }
-
-        // 저장할 파일 이름 설정
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        String filePath = uploadPath + File.separator + fileName; // OS에 따라 경로 구분자 처리
-        System.out.println("File will be saved at: " + filePath); // 저장될 파일 경로 확인
-
-        // 파일 저장
-        File dest = new File(filePath);
-        file.transferTo(dest);
-        System.out.println("File transferred to: " + dest.getAbsolutePath()); // 파일 전송 확인
-
-        // 해당 회원의 이력서 정보 가져오기
-        Resume resume = resumeRepository.findByMember_MemberId(memberId)
-                .stream().findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 회원의 이력서가 없습니다."));
-
-        // 프로필 이미지 경로 설정 및 저장
-        resume.setProfileImage("/uploads/" + fileName); // DB에 저장될 경로는 서버 기준 경로로 설정
-        resumeRepository.save(resume);
-        System.out.println("Resume Retrieved: " + resume); // 이력서 조회 결과 확인
-
-        return "/uploads/" + fileName;
     }
 
     // 주소 저장 - 2번 항목
@@ -399,8 +685,6 @@ public class ResumeService {
         resumeRepository.save(resume);
     }
 
-    /*
-
     // OCR로 제목을 인식하여 저장하는 메서드
     @Transactional
     public Resume saveTitleFromOcr(byte[] imageBytes, Integer memberId) {
@@ -408,10 +692,10 @@ public class ResumeService {
         return saveTitle(ocrTitle, memberId);
     }
 
-     */
+    // 강점 관련 메서드
 
     // 강점 업데이트 메서드
-    public void updateStrengths(Long resumeId, List<String> strengths) {
+    public void updateStrengths(Integer resumeId, List<String> strengths) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
 
@@ -423,14 +707,14 @@ public class ResumeService {
         resumeRepository.save(resume);
     }
 
-    public void saveStrengths(Long resumeId, List<String> strengths) {
+    public void saveStrengths(Integer resumeId, List<String> strengths) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
         resume.setStrengths(strengths);
         resumeRepository.save(resume);
     }
 
-    public List<String> getStrengths(Long resumeId) {
+    public List<String> getStrengths(Integer resumeId) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
         return resume.getStrengths();
@@ -484,7 +768,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public void addCertificates(Long resumeId, List<CertificateDto> certificateDtos) {
+    public void addCertificates(Integer resumeId, List<CertificateDto> certificateDtos) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
 
@@ -503,7 +787,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public void saveCertificates(Long resumeId, List<CertificateDto> certificates) {
+    public void saveCertificates(Integer resumeId, List<CertificateDto> certificates) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
 
@@ -519,23 +803,5 @@ public class ResumeService {
 
         certificateRepository.saveAll(certifications);
     }
-
-    @Transactional
-    public ResumeDto initializeResumeForUser(Integer userId) {
-        // Member 조회
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + userId));
-
-        // Resume 생성
-        Resume resume = new Resume();
-        resume.setMember(member);
-        resume.setTitle("New Resume");
-
-        // Resume 저장
-        Resume savedResume = resumeRepository.save(resume);
-        System.out.println("Saved Resume: " + savedResume); // 저장 확인
-
-        // DTO 변환
-        return convertToDto(savedResume); // null 반환 여부 확인
     }
-}
+ */

@@ -1,6 +1,7 @@
 package com.likelion12th.SWUProject1Team.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.likelion12th.SWUProject1Team.dto.AcademicInfoDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +36,23 @@ public class AcademicInfo {
     @JoinColumn(name = "resume_id")
     @JsonBackReference // 자식 -> 부모 방향 순환 참조 방지
     private Resume resume; // 이 필드를 추가하여 오류 해결
+
+    // 변환용 생성자 추가
+    public AcademicInfo(AcademicInfoDto dto, Resume resume) {
+        this.schoolName = dto.getSchoolName();
+        this.type = dto.getType();
+        this.address = dto.getAddress();
+        this.major = dto.getMajor();
+        this.startDate = dto.getStartDate();
+        this.endDate = dto.getEndDate();
+        this.graduationStatus = dto.getGraduationStatus();
+        this.resume = resume;
+    }
+
+    // 기본 생성자
+    public AcademicInfo() {
+    }
+
 
     // 요청에서 resumeId를 받아오기 위한 임시 필드
     @Transient

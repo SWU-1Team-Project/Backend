@@ -2,6 +2,7 @@ package com.likelion12th.SWUProject1Team.controller;
 
 import com.likelion12th.SWUProject1Team.dto.CertificateDto;
 import com.likelion12th.SWUProject1Team.service.CertificateService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class CertificateController {
     private CertificateService certificateService;
 
     @PostMapping(value = "/{resumeId}", consumes = "application/json", produces = "application/json; charset=UTF-8")
-    public ResponseEntity<String> saveCertificates(@PathVariable Long resumeId,
+    public ResponseEntity<String> saveCertificates(@PathVariable Integer resumeId,
                                                    @RequestBody List<CertificateDto> certificates) {
         if (certificates.isEmpty()) {
             return ResponseEntity.badRequest().body("자격증 정보가 비어 있습니다.");

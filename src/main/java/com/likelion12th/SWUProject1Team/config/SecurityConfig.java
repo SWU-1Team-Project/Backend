@@ -9,11 +9,13 @@ import com.likelion12th.SWUProject1Team.oauth2.CustomSuccessHandler;
 import com.likelion12th.SWUProject1Team.repository.MemberRepository;
 import com.likelion12th.SWUProject1Team.repository.RefreshRepository;
 import com.likelion12th.SWUProject1Team.service.CustomOAuth2UserService;
+import com.likelion12th.SWUProject1Team.service.CustomUserDetailsService;
 import com.likelion12th.SWUProject1Team.service.ReissueService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,10 +40,11 @@ public class SecurityConfig {
     private final CustomSuccessHandler customSuccessHandler;
     private final MemberRepository memberRepository;
     private final ReissueService reissueService;
+    private final CustomUserDetailsService customUserDetailsService;
 
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository, ReissueService reissueService,
-                          CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, MemberRepository memberRepository) {
+                          CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, MemberRepository memberRepository, CustomUserDetailsService customUserDetailsService) {
 
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
@@ -50,7 +53,9 @@ public class SecurityConfig {
         this.customSuccessHandler = customSuccessHandler;
         this.memberRepository = memberRepository;
         this.reissueService = reissueService;
+        this.customUserDetailsService = customUserDetailsService;
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {

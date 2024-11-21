@@ -11,7 +11,9 @@ import java.util.List;
 public interface AcademicInfoRepository extends JpaRepository <AcademicInfo, Long> {
 
     // 새로운 메서드 선언: 특정 이력서 ID와 학교명이 존재하는지 확인
-    boolean existsByResume_IdAndSchoolName(Long resumeId, String schoolName);
+    boolean existsByResume_IdAndSchoolName(Integer resumeId, String schoolName);
+
+    List<AcademicInfo> findByResume_Id(Integer resumeId);
 
     // 특정 학교 이름과 타입을 기준으로 검색
     List<AcademicInfo> findBySchoolNameContainingAndType(String schoolName, String type);
@@ -28,5 +30,5 @@ public interface AcademicInfoRepository extends JpaRepository <AcademicInfo, Lon
     List<String> findAllSchoolNames();
 
     // 특정 Resume ID와 data_source가 'user'인 데이터만 조회
-    List<AcademicInfo> findByResume_IdAndDataSource(Long resumeId, String dataSource);
+    List<AcademicInfo> findByResume_IdAndDataSource(Integer resumeId, String dataSource);
 }

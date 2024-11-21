@@ -56,7 +56,7 @@ public class WorkExperienceService {
 
 
     // 경력 삭제
-    public void deleteWorkExperience(Long resumeId, Long workExperienceId) {
+    public void deleteWorkExperience(Integer resumeId, Integer workExperienceId) {
         WorkExperience workExperience = workExperienceRepository.findById(workExperienceId)
                 .orElseThrow(() -> new IllegalArgumentException("경력 사항을 찾을 수 없습니다."));
 
@@ -69,7 +69,7 @@ public class WorkExperienceService {
         updateTotalExperience(resumeId); // 삭제 후 총 경력 업데이트
     }
 
-    public void updateTotalExperience(Long resumeId) {
+    public void updateTotalExperience(Integer resumeId) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
 
@@ -81,7 +81,7 @@ public class WorkExperienceService {
 
 
     // 총 경력 기간 계산
-    public String calculateTotalExperience(Long resumeId) {
+    public String calculateTotalExperience(Integer resumeId) {
         List<WorkExperience> experiences = workExperienceRepository.findByResumeId(resumeId);
 
         int totalMonths = experiences.stream()
@@ -96,7 +96,7 @@ public class WorkExperienceService {
     }
 
     // 특정 이력서의 모든 경력 조회
-    public List<WorkExperience> getWorkExperiences(Long resumeId) {
+    public List<WorkExperience> getWorkExperiences(Integer resumeId) {
         return workExperienceRepository.findByResume_Id(resumeId);
     }
 }

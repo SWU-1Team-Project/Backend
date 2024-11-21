@@ -1,18 +1,23 @@
 package com.likelion12th.SWUProject1Team.controller;
 
 import com.likelion12th.SWUProject1Team.dto.CertificateDto;
+import com.likelion12th.SWUProject1Team.dto.CustomUserDetails;
 import com.likelion12th.SWUProject1Team.dto.ResumeDto;
-import com.likelion12th.SWUProject1Team.entity.AcademicInfo;
+import com.likelion12th.SWUProject1Team.dto.ResumeRequestDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.entity.Resume;
-import com.likelion12th.SWUProject1Team.entity.WorkExperience;
 import com.likelion12th.SWUProject1Team.repository.AddressRepository;
+import com.likelion12th.SWUProject1Team.repository.MemberRepository;
+import com.likelion12th.SWUProject1Team.repository.ResumeRepository;
 import com.likelion12th.SWUProject1Team.service.AcademicInfoService;
+import com.likelion12th.SWUProject1Team.service.SectionService;
 import com.likelion12th.SWUProject1Team.service.ResumeService;
 import com.likelion12th.SWUProject1Team.service.WorkExperienceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,42 +32,197 @@ public class ResumeController {
 
     private final ResumeService resumeService;
     private final AddressRepository addressRepository;
+    private final ResumeRepository resumeRepository;
     private final AcademicInfoService academicInfoService; // 주입 추가
     private final WorkExperienceService workExperienceService;
+    private final MemberRepository memberRepository;
+    private final SectionService sectionService; // 의존성 주입
 
-    @PostMapping("/init/{userId}")
-    public ResponseEntity<ResumeDto> initializeResumeForUser(@PathVariable Integer userId) {
-        // 서비스 호출
-        ResumeDto createdResume = resumeService.initializeResumeForUser(userId);
+    // 체크용 api
+    @GetMapping("/check-user")
+    public ResponseEntity<Map<String, Object>> checkUserCreation(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // username 가져오기
+            String username = userDetails.getUsername();
 
-        // 반환 값 확인
-        if (createdResume == null) {
-            throw new IllegalArgumentException("Failed to create resume for userId: " + userId);
+            // username으로 Member 객체 조회
+            Member member = memberRepository.findByUsername(username);
+
+            if (member != null) {
+                response.put("status", "success");
+                response.put("message", "사용자 정보 확인 완료");
+                response.put("userId", member.getMemberId());
+            } else {
+                response.put("status", "failure");
+                response.put("message", "사용자를 찾을 수 없습니다");
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("status", "failure");
+            response.put("message", "인증되지 않은 사용자입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-
-        // 응답 반환
-        return ResponseEntity.ok(createdResume);
     }
 
-    // 이력서 생성
+    // 필수 항목 작성 완료한 후 생성하기
     @PostMapping("/create")
-    public ResponseEntity<ResumeDto> createResume(
-            @RequestBody ResumeDto resumeDto,
-            @RequestParam Integer memberId) {
-        ResumeDto createdResume = resumeService.createResume(resumeDto, memberId);
-        return ResponseEntity.ok(createdResume);
+    public ResponseEntity<Map<String, Object>> createRequiredResume(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ResumeRequestDto request) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // username 가져오기
+            String username = userDetails.getUsername();
+
+            // MemberRepository를 사용해 username으로 Member 조회
+            Member member = memberRepository.findByUsername(username);
+
+            // userId 가져오기
+            int userId = member.getMemberId();
+
+            // Resume 생성
+            Resume createdResume = resumeService.createResumeForMember(userId, request);
+
+            // 성공 응답 구성
+            response.put("status", "success");
+            response.put("message", "이력서 생성 완료!");
+            response.put("resumeId", createdResume.getId());
+            response.put("title", createdResume.getTitle());
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.put("status", "failure");
+            response.put("message", "이력서 생성 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
-    /*
-
-    @PostMapping("/{resumeId}/save-title")
-    public ResponseEntity<String> saveTitle(@PathVariable Long resumeId, @RequestParam String title) {
-        resumeService.saveTitle(resumeId, title);
-        return ResponseEntity.ok("제목이 성공적으로 저장되었습니다.");
+    // 이력서 조회 시에 사용
+    @GetMapping("/{resumeId}")
+    public ResponseEntity<ResumeDto> getResumeById(@PathVariable Integer resumeId) {
+        ResumeDto resume = resumeService.getResumeById(resumeId);
+        return ResponseEntity.ok(resume);
     }
 
-     */
+    // 특정 User의 모든 Resume 조회
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<ResumeDto>> getResumesByUserId(@PathVariable int userId) {
+        List<ResumeDto> resumes = resumeService.getResumesByUserId(userId);
+        return ResponseEntity.ok(resumes);
+    }
 
+    // 이력서 수정하기
+    @PutMapping("/{resumeId}")
+    public ResponseEntity<ResumeDto> updateResume(
+            @PathVariable Integer resumeId,
+            @RequestBody ResumeRequestDto request) {
+        ResumeDto updatedResume = resumeService.updateResume(resumeId, request);
+        return ResponseEntity.ok(updatedResume);
+    }
+
+    @DeleteMapping("/{resumeId}")
+    public ResponseEntity<Map<String, Object>> deleteResume(@PathVariable Integer resumeId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            resumeService.deleteResume(resumeId);
+            response.put("status", "success");
+            response.put("message", "이력서가 성공적으로 삭제되었습니다.");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.put("status", "failure");
+            response.put("message", "이력서 삭제 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    // 프로필 이미지 업로드 API
+    @PostMapping("/{userId}/upload-profile-image")
+    public ResponseEntity<String> uploadProfileImage(
+            @PathVariable Integer userId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            System.out.println("Member ID: " + userId); // 입력받은 Member ID 확인
+            System.out.println("File Name: " + file.getOriginalFilename()); // 업로드된 파일 이름 확인
+
+            if (file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일이 비어 있습니다.");
+            }
+
+            // 프로필 이미지 저장
+            String filePath = resumeService.saveProfileImage(userId, file);
+            System.out.println("File saved at path: " + filePath); // 파일 저장 경로 출력
+
+
+            if (filePath != null) {
+                return ResponseEntity.ok("프로필 이미지가 성공적으로 업로드되었습니다. 경로: " + filePath);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 저장 중 오류 발생");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 업로드 실패: " + e.getMessage());
+        }
+    }
+
+    // 자격증 추가하기
+    @PostMapping("/{resumeId}/certificates")
+    public ResponseEntity<String> addCertificates(
+            @PathVariable Integer resumeId,
+            @RequestBody List<CertificateDto> certificateDtos) {
+        resumeService.addCertificates(resumeId, certificateDtos);
+        return ResponseEntity.ok("자격증이 성공적으로 추가되었습니다.");
+    }
+
+    // 성장 과정 저장
+    @PostMapping("/{resumeId}/sections/growth-process")
+    public ResponseEntity<Map<String, String>> saveGrowthProcess(
+            @PathVariable Integer resumeId,
+            @RequestBody Map<String, String> request) {
+        sectionService.saveSection(resumeId, "growthProcess", request.get("text"));
+        return ResponseEntity.ok(Map.of("status", "success", "message", "성장 과정이 성공적으로 저장되었습니다."));
+    }
+
+    // 성격 소개 저장
+    @PostMapping("/{resumeId}/sections/personality-introduction")
+    public ResponseEntity<Map<String, String>> savePersonalityIntroduction(
+            @PathVariable Integer resumeId,
+            @RequestBody Map<String, String> request) {
+        sectionService.saveSection(resumeId, "personalityIntroduction", request.get("text"));
+        return ResponseEntity.ok(Map.of("status", "success", "message", "성격 소개가 성공적으로 저장되었습니다."));
+    }
+
+    // 지원 동기 저장
+    @PostMapping("/{resumeId}/sections/motivation")
+    public ResponseEntity<Map<String, String>> saveMotivation(
+            @PathVariable Integer resumeId,
+            @RequestBody Map<String, String> request) {
+        sectionService.saveSection(resumeId, "motivation", request.get("text"));
+        return ResponseEntity.ok(Map.of("status", "success", "message", "지원 동기가 성공적으로 저장되었습니다."));
+    }
+
+    // 희망 업무 및 포부 저장
+    @PostMapping("/{resumeId}/sections/job-ambition")
+    public ResponseEntity<Map<String, String>> saveJobAmbition(
+            @PathVariable Integer resumeId,
+            @RequestBody Map<String, String> request) {
+        sectionService.saveSection(resumeId, "jobAmbition", request.get("text"));
+        return ResponseEntity.ok(Map.of("status", "success", "message", "희망 업무 및 포부가 성공적으로 저장되었습니다."));
+    }
+
+    // 특기 사항 저장
+    @PostMapping("/{resumeId}/sections/special-note")
+    public ResponseEntity<Map<String, String>> saveSpecialNote(
+            @PathVariable Integer resumeId,
+            @RequestBody Map<String, String> request) {
+        sectionService.saveSection(resumeId, "specialNote", request.get("text"));
+        return ResponseEntity.ok(Map.of("status", "success", "message", "특기 사항이 성공적으로 저장되었습니다."));
+    }
+
+/*
     @PostMapping("/{resumeId}/add-additional-fields")
     public ResponseEntity<ResumeDto> addAdditionalFields(
             @PathVariable Long resumeId,
@@ -75,7 +235,7 @@ public class ResumeController {
         }
     }
 
-    // 이력서 조회 (resumeId로 조회) - ?
+    // 이력서 조회 (resumeId로 조회)
     @GetMapping("/{resumeId}")
     public ResponseEntity<ResumeDto> getResume(@PathVariable Long resumeId) {
         try {
@@ -86,26 +246,14 @@ public class ResumeController {
         }
     }
 
-    // 이력서 전체 조회
-    @GetMapping("/member/{memberId}/full-details")
-    public ResponseEntity<List<ResumeDto>> getAllResumesByMemberId(@PathVariable Integer memberId) {
-        List<ResumeDto> resumes = resumeService.getAllResumesByMemberId(memberId);
-        return ResponseEntity.ok(resumes);
-    }
-
-    // 특정 회원의 모든 이력서 조회 (memberId로 조회)
-    @GetMapping("/member/{memberId}")
-    public ResponseEntity<List<ResumeDto>> getResumesByMemberId(@PathVariable Integer memberId) {
-        List<ResumeDto> resumes = resumeService.getResumesByMemberId(memberId);
-        return ResponseEntity.ok(resumes);
-    }
-
     // 특정 회원의 최신 이력서 조회
     @GetMapping("/member/{memberId}/latest")
     public ResponseEntity<ResumeDto> getLatestResumeByMemberId(@PathVariable Integer memberId) {
         ResumeDto latestResume = resumeService.getLatestResumeByMemberId(memberId);
         return ResponseEntity.ok(latestResume);
     }
+
+ */
 
 
     /*
@@ -122,6 +270,8 @@ public class ResumeController {
     }
 
      */
+
+    /*
 
     // 이력서와 사용자 정보를 가져오는 API (이력서 - 개인정보 작성하기 조회 부분)
     @GetMapping("/{memberId}/personal-info-edit")
@@ -150,34 +300,6 @@ public class ResumeController {
         }
     }
 
-    // 프로필 이미지 업로드 API
-    @PostMapping("/{memberId}/upload-profile-image")
-    public ResponseEntity<String> uploadProfileImage(
-            @PathVariable Integer memberId,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            System.out.println("Member ID: " + memberId); // 입력받은 Member ID 확인
-            System.out.println("File Name: " + file.getOriginalFilename()); // 업로드된 파일 이름 확인
-
-            if (file.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("파일이 비어 있습니다.");
-            }
-
-            // 프로필 이미지 저장
-            String filePath = resumeService.saveProfileImage(memberId, file);
-            System.out.println("File saved at path: " + filePath); // 파일 저장 경로 출력
-
-
-            if (filePath != null) {
-                return ResponseEntity.ok("프로필 이미지가 성공적으로 업로드되었습니다. 경로: " + filePath);
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 저장 중 오류 발생");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 이미지 업로드 실패: " + e.getMessage());
-        }
-    }
 
     // 주소 저장 API
     @PostMapping("/{memberId}/save-address")
@@ -240,7 +362,7 @@ public class ResumeController {
         return ResponseEntity.ok(response);
     }
 
-    // 강점 저장 API
+    // 강점 업데이트 API
     @PostMapping("/{resumeId}/strengths")
     public ResponseEntity<String> updateStrengths(
             @PathVariable Long resumeId,
@@ -249,7 +371,8 @@ public class ResumeController {
         return ResponseEntity.ok("성격 및 강점이 성공적으로 저장되었습니다.");
     }
 
-    @GetMapping("/{resumeId}/strengths") // 강점 정보
+    // 강점 가져오기
+    @GetMapping("/{resumeId}/strengths")
     public ResponseEntity<List<String>> getStrengths(@PathVariable Long resumeId) {
         List<String> strengths = resumeService.getStrengths(resumeId);
         return ResponseEntity.ok(strengths);
@@ -262,34 +385,12 @@ public class ResumeController {
         return ResponseEntity.ok(resumeDto);
     }
 
-    // 자격증 추가 API
-    @PostMapping("/{resumeId}/certificates")
-    public ResponseEntity<String> addCertificates(
-            @PathVariable Long resumeId,
-            @RequestBody List<CertificateDto> certificateDtos) {
-        resumeService.addCertificates(resumeId, certificateDtos);
-        return ResponseEntity.ok("자격증이 성공적으로 추가되었습니다.");
-    }
-
     // 특정 이력서의 자격증 조회 API
     @GetMapping("/{resumeId}/certificates")
     public ResponseEntity<List<CertificateDto>> getCertificates(@PathVariable Long resumeId) {
         List<CertificateDto> certificates = resumeService.getCertificatesByResumeId(resumeId);
         return ResponseEntity.ok(certificates);
-    }
+  }
 
-    // 이력서 제목 수동 저장 API
-    @PostMapping("/{memberId}/title/manual/")
-    public ResponseEntity<String> saveManualTitle(
-            @PathVariable Integer memberId, // 회원 ID
-            @PathVariable Long resumeId,    // 이력서 ID
-            @RequestParam String title) {   // 제목
-        try {
-            // 특정 이력서의 제목 수정
-            resumeService.saveTitle(title, memberId, resumeId);
-            return ResponseEntity.ok("이력서 제목이 성공적으로 저장되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+     */
 }

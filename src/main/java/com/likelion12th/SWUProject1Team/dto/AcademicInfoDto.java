@@ -1,5 +1,6 @@
 package com.likelion12th.SWUProject1Team.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,4 +23,11 @@ public class AcademicInfoDto {
     private String endDate; // 종료 기간
     private String graduationStatus; // 졸업 여부 (재학 중 / 휴학 / 졸업 / 자퇴 중에서 선택)
 
+    public AcademicInfoDto(String schoolName, String type, String startDate, String endDate, String graduationStatus) {
+        this.schoolName = schoolName;
+        this.type = type;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.graduationStatus = graduationStatus;
     }
+}

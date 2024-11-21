@@ -44,13 +44,13 @@ public class Resume {
     private String totalExperience;
 
     // 주소 관련 필드 추가
-    @Column(nullable = false)
+    @Column
     private String postcode; // 우편번호
 
-    @Column(nullable = false)
+    @Column
     private String roadAddress; // 도로명 주소
 
-    @Column(nullable = false)
+    @Column
     private String detailAddress; // 상세 주소
 
     // 전체 주소를 하나의 문자열로 반환하는 메소드
@@ -72,7 +72,7 @@ public class Resume {
 
     // 단방향 관계: AcademicInfo -> Resume (AcademicInfo: 학력 정보)
     // 학력 정보 List
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference // 부모 -> 자식 방향 순환 참조 방지
     private List<AcademicInfo> academicInfoList;
 

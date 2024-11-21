@@ -156,7 +156,7 @@ public class AcademicInfoService {
     }
 
     // 단일 AcademicInfo 객체를 저장하는 메서드 (오버로드)
-    public void saveAcademicInfo(Long resumeId, AcademicInfo academicInfo) {
+    public void saveAcademicInfo(Integer resumeId, AcademicInfo academicInfo) {
         // 이력서 조회 및 검증
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
@@ -216,7 +216,7 @@ public class AcademicInfoService {
 
 
     // 특정 Resume ID에 대해 data_source가 'user'인 학력 정보 조회 메서드
-    public List<AcademicInfo> getUserAcademicInfoByResumeId(Long resumeId) {
+    public List<AcademicInfo> getUserAcademicInfoByResumeId(Integer resumeId) {
         return academicInfoRepository.findByResume_IdAndDataSource(resumeId, "user");
     }
 

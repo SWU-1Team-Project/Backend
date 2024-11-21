@@ -38,7 +38,7 @@ public class CertificateService {
 
     // 특정 이력서에 자격증 저장
     @Transactional
-    public void saveCertificates(Long resumeId, List<CertificateDto> certificates) {
+    public void saveCertificates(Integer resumeId, List<CertificateDto> certificates) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new IllegalArgumentException("Resume not found"));
 

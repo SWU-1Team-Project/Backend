@@ -1,6 +1,7 @@
 package com.likelion12th.SWUProject1Team.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.likelion12th.SWUProject1Team.dto.WorkExperienceDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,5 +40,30 @@ public class WorkExperience {
             return (int) ChronoUnit.MONTHS.between(startDate, end);
         }
         return 0; // 시작일 또는 종료일이 없는 경우, 0개월로 반환
+    }
+
+    // 총 경력을 문자열(년/개월)로 변환하는 메서드
+    public String formatDuration(int totalMonths) {
+        int years = totalMonths / 12; // 년
+        int months = totalMonths % 12; // 개월
+        return years + "년 " + months + "개월";
+    }
+
+    public WorkExperience(WorkExperienceDto dto, Resume resume) {
+        this.companyName = dto.getCompanyName();
+        this.startDate = dto.getStartDate();
+        this.endDate = dto.getEndDate();
+        this.isCurrent = dto.getIsCurrent();
+        this.responsibilities = dto.getResponsibilities();
+        this.resume = resume;
+
+        // 총 경력 자동 계산 및 문자열로 설정
+        int totalMonths = calculateDurationInMonths();
+        this.totalExperience = formatDuration(totalMonths);
+    }
+
+
+    // 기본 생성자
+    public WorkExperience() {
     }
 }
