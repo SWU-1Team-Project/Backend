@@ -6,6 +6,7 @@ import com.likelion12th.SWUProject1Team.dto.ResumeDto;
 import com.likelion12th.SWUProject1Team.dto.ResumeRequestDto;
 import com.likelion12th.SWUProject1Team.entity.Member;
 import com.likelion12th.SWUProject1Team.entity.Resume;
+import com.likelion12th.SWUProject1Team.entity.WorkExperience;
 import com.likelion12th.SWUProject1Team.repository.AddressRepository;
 import com.likelion12th.SWUProject1Team.repository.MemberRepository;
 import com.likelion12th.SWUProject1Team.repository.ResumeRepository;
@@ -124,6 +125,12 @@ public class ResumeController {
         return ResponseEntity.ok(updatedResume);
     }
 
+    @GetMapping("/{resumeId}/details")
+    public ResponseEntity<ResumeDto> getCompleteResumeDetails(@PathVariable Integer resumeId) {
+        ResumeDto resumeDto = resumeService.getCompleteResumeById(resumeId);
+        return ResponseEntity.ok(resumeDto);
+    }
+
     @DeleteMapping("/{resumeId}")
     public ResponseEntity<Map<String, Object>> deleteResume(@PathVariable Integer resumeId) {
         Map<String, Object> response = new HashMap<>();
@@ -221,6 +228,52 @@ public class ResumeController {
         sectionService.saveSection(resumeId, "specialNote", request.get("text"));
         return ResponseEntity.ok(Map.of("status", "success", "message", "특기 사항이 성공적으로 저장되었습니다."));
     }
+
+    // 추가 항목 저장하기
+    @PostMapping("/{resumeId}/add-additional-fields")
+    public ResponseEntity<ResumeDto> addAdditionalFields(
+            @PathVariable Integer resumeId,
+            @RequestBody ResumeDto resumeDto) {
+        try {
+            ResumeDto updatedResume = resumeService.addAdditionalFields(resumeId, resumeDto);
+            return ResponseEntity.ok(updatedResume);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+        @GetMapping("/{userId}/personal-info-edit")
+        public ResponseEntity<Map<String, Object>> getPersonalInfo(@PathVariable int userId) {
+            Member member = resumeService.getMemberInfo(userId);
+            Resume resume = resumeService.getResumeWithMemberInfo(userId);
+
+            if (member != null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("name", member.getName());
+                response.put("email", member.getEmail());
+                response.put("phone_number", member.getPhone_number());
+                response.put("profileImage", resume.getProfileImage());
+                response.put("postcode", resume.getPostcode());
+                response.put("roadAddress", resume.getRoadAddress());
+                response.put("detailAddress", resume.getDetailAddress());
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+        }
+
+    @GetMapping("/{resumeId}/work-experiences")
+    public ResponseEntity<Map<String, Object>> getWorkExperiences(@PathVariable Integer resumeId) {
+        Map<String, Object> response = new HashMap<>();
+        List<WorkExperience> experiences = workExperienceService.getWorkExperiences(resumeId);
+        response.put("workExperiences", experiences);
+
+        String totalExperience = workExperienceService.calculateTotalExperience(resumeId);
+        response.put("totalExperience", totalExperience);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 /*
     @PostMapping("/{resumeId}/add-additional-fields")

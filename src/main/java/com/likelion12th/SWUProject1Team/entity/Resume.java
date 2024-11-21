@@ -66,14 +66,12 @@ public class Resume {
 
     // 단방향 관계: WorkExperience -> Resume (WorkExperience: 경력 사항)
     // 경력 사항 List
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WorkExperience> workExperienceList;
 
     // 단방향 관계: AcademicInfo -> Resume (AcademicInfo: 학력 정보)
     // 학력 정보 List
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference // 부모 -> 자식 방향 순환 참조 방지
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AcademicInfo> academicInfoList;
 
     // 자격증 List (Certification : 자격증 정보)

@@ -32,14 +32,6 @@ public class ResumeService {
     private final MemberRepository memberRepository;
     private final OcrApiService ocrApiService;
 
-    private AcademicInfo convertToAcademicInfo(AcademicInfoDto dto, Resume resume) {
-        return new AcademicInfo(dto, resume);
-    }
-
-    // Dto를 WorkExperience 엔티티로 변환
-    private WorkExperience convertToWorkExperience(WorkExperienceDto dto, Resume resume) {
-        return new WorkExperience(dto, resume);
-    }
 
     // 이력서 필수 항목 생성하기
     @Transactional
@@ -81,6 +73,49 @@ public class ResumeService {
         return resumeRepository.save(resume);
     }
 
+    // AcademicInfo 변환 메서드
+    private AcademicInfo convertToAcademicInfo(AcademicInfoDto dto, Resume resume) {
+        AcademicInfo academicInfo = new AcademicInfo();
+        academicInfo.setSchoolName(dto.getSchoolName());
+        academicInfo.setType(dto.getType());
+        academicInfo.setStartDate(dto.getStartDate());
+        academicInfo.setEndDate(dto.getEndDate());
+        academicInfo.setGraduationStatus(dto.getGraduationStatus());
+        academicInfo.setResume(resume); // 부모와의 연관 관계 설정
+        return academicInfo;
+    }
+
+    // WorkExperience 변환 메서드
+    private WorkExperience convertToWorkExperience(WorkExperienceDto dto, Resume resume) {
+        WorkExperience workExperience = new WorkExperience();
+        workExperience.setCompanyName(dto.getCompanyName());
+        workExperience.setStartDate(dto.getStartDate());
+        workExperience.setEndDate(dto.getEndDate());
+        workExperience.setResponsibilities(dto.getResponsibilities());
+        workExperience.setResume(resume); // 부모와의 연관 관계 설정
+        return workExperience;
+    }
+
+    private void validateRequiredFields(ResumeRequestDto request) {
+        if (request.getTitle() == null || request.getTitle().isEmpty() ||
+                request.getPostcode() == null || request.getPostcode().isEmpty() ||
+                request.getRoadAddress() == null || request.getRoadAddress().isEmpty() ||
+                request.getDetailAddress() == null || request.getDetailAddress().isEmpty() ||
+                request.getStrengths() == null || request.getStrengths().isEmpty() ||
+                request.getStrengths().size() < 1 ||
+                request.getAcademicInfoList() == null || request.getAcademicInfoList().isEmpty()) {
+            throw new IllegalArgumentException("모든 필수 항목을 작성해야 합니다.");
+        }
+
+        // 경력 사항 검증
+        if (Boolean.TRUE.equals(request.getIsExperienced())) {
+            if (request.getWorkExperienceList() == null || request.getWorkExperienceList().isEmpty()) {
+                throw new IllegalArgumentException("경력자라면 최소 1개의 경력 사항을 입력해야 합니다.");
+            }
+        }
+
+
+    /*
     private void validateRequiredFields(ResumeRequestDto request) {
         if (request.getTitle() == null || request.getPostcode() == null || request.getRoadAddress() == null
                 || request.getDetailAddress() == null || request.getStrengths() == null || request.getStrengths().size() < 1) {
@@ -93,14 +128,8 @@ public class ResumeService {
                 throw new IllegalArgumentException("경력자라면 최소 1개의 경력 사항을 입력해야 합니다.");
             }
         }
-    }
 
-    // 특정 Resume 조회
-    public ResumeDto getResumeById(Integer resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
-
-        return convertToDto(resume);
+     */
     }
 
     // 특정 User의 모든 Resume 조회
@@ -110,6 +139,30 @@ public class ResumeService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+    @Transactional
+    public ResumeDto getResumeById(Integer resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
+
+        return convertToDto(resume);
+    }
+
+    @Transactional
+    public ResumeDto getCompleteResumeById(Integer resumeId) {
+        Resume resume = resumeRepository.findResumeWithAssociations(resumeId)
+                .orElseThrow(() -> new IllegalArgumentException("Resume not found with ID: " + resumeId));
+
+        // Lazy 로딩된 연관 데이터를 강제로 로딩
+        resume.getWorkExperienceList().size(); // WorkExperience 강제 로딩
+        resume.getAcademicInfoList().size();   // AcademicInfo 강제 로딩
+
+        // 디버깅용 데이터 출력
+        System.out.println("WorkExperience List: " + resume.getWorkExperienceList());
+        System.out.println("AcademicInfo List: " + resume.getAcademicInfoList());
+
+        return convertToDto(resume); // DTO 변환
+    }
+
 
     // Resume -> ResumeDto 변환
     private ResumeDto convertToDto(Resume resume) {
@@ -123,7 +176,6 @@ public class ResumeService {
         resumeDto.setPostcode(resume.getPostcode());
         resumeDto.setRoadAddress(resume.getRoadAddress());
         resumeDto.setDetailAddress(resume.getDetailAddress());
-
         resumeDto.setGrowthProcess(resume.getGrowthProcess());
         resumeDto.setPersonality(resume.getPersonality());
         resumeDto.setReason(resume.getReason());
@@ -133,21 +185,34 @@ public class ResumeService {
 
         // 학력 정보 변환
         List<AcademicInfoDto> academicInfoDtos = resume.getAcademicInfoList().stream()
-                .map(info -> new AcademicInfoDto(info.getSchoolName(), info.getType(), info.getStartDate(), info.getEndDate(), info.getGraduationStatus()))
+                .map(info -> new AcademicInfoDto(
+                        info.getSchoolName(),
+                        info.getType(),
+                        info.getStartDate(),
+                        info.getEndDate(),
+                        info.getGraduationStatus()))
                 .collect(Collectors.toList());
         resumeDto.setAcademicInfoList(academicInfoDtos);
 
         // 경력 정보 변환
         List<WorkExperienceDto> workExperienceDtos = resume.getWorkExperienceList().stream()
-                .map(exp -> new WorkExperienceDto(exp.getCompanyName(), exp.getStartDate(), exp.getEndDate(), exp.getResponsibilities()))
+                .map(exp -> new WorkExperienceDto(
+                        exp.getCompanyName(),
+                        exp.getStartDate(),
+                        exp.getEndDate(),
+                        exp.getResponsibilities()))
                 .collect(Collectors.toList());
         resumeDto.setWorkExperienceList(workExperienceDtos);
 
-        // 자격증 정보 변환
-        List<CertificateDto> certifications = resume.getCertifications().stream()
-                .map(cert -> new CertificateDto(cert.getName(), cert.getDate()))
-                .collect(Collectors.toList());
-        resumeDto.setCertifications(certifications);
+        // 자격증 정보 변환 (자격증 정보가 있을 때만 변환)
+        if (resume.getCertifications() != null && !resume.getCertifications().isEmpty()) {
+            List<CertificateDto> certifications = resume.getCertifications().stream()
+                    .map(cert -> new CertificateDto(cert.getName(), cert.getDate()))
+                    .collect(Collectors.toList());
+            resumeDto.setCertifications(certifications);
+        } else {
+            resumeDto.setCertifications(Collections.emptyList()); // 자격증 정보가 없으면 빈 리스트 설정
+        }
 
         // Member 정보 변환
         if (resume.getMember() != null) {
@@ -155,14 +220,88 @@ public class ResumeService {
             resumeDto.setEmail(resume.getMember().getEmail());
             resumeDto.setPhone_Number(resume.getMember().getPhone_number());
             resumeDto.setGender(resume.getMember().getGender());
+            resumeDto.setBirth_day(resume.getMember().getBirth_date());
         }
 
-        // 총 경력 기간 설정
-        String totalExperience = workExperienceService.calculateTotalExperience((resume.getId()));
+        // 총 경력 기간 계산
+        String totalExperience = workExperienceService.calculateTotalExperience(resume.getId());
         resumeDto.setTotalExperience(totalExperience);
 
         return resumeDto;
     }
+
+    private Resume convertToEntity(ResumeDto resumeDto, Member member) {
+        Resume resume = new Resume();
+
+        // 기본 필드 설정
+        resume.setTitle(resumeDto.getTitle());
+        resume.setProfileImage(resumeDto.getProfileImage());
+        resume.setIsExperienced(resumeDto.getIsExperienced());
+        resume.setPostcode(resumeDto.getPostcode());
+        resume.setRoadAddress(resumeDto.getRoadAddress());
+        resume.setDetailAddress(resumeDto.getDetailAddress());
+
+        resume.setGrowthProcess(resumeDto.getGrowthProcess());
+        resume.setPersonality(resumeDto.getPersonality());
+        resume.setReason(resumeDto.getReason());
+        resume.setJob(resumeDto.getJob());
+        resume.setSpecialNote(resumeDto.getSpecialNote());
+        resume.setStrengths(resumeDto.getStrengths());
+
+        // 학력 정보 설정
+        if (resumeDto.getAcademicInfoList() != null) {
+            List<AcademicInfo> academicInfoList = resumeDto.getAcademicInfoList().stream()
+                    .map(infoDto -> {
+                        AcademicInfo academicInfo = new AcademicInfo();
+                        academicInfo.setSchoolName(infoDto.getSchoolName());
+                        academicInfo.setType(infoDto.getType());
+                        academicInfo.setStartDate(infoDto.getStartDate());
+                        academicInfo.setEndDate(infoDto.getEndDate());
+                        academicInfo.setGraduationStatus(infoDto.getGraduationStatus());
+                        academicInfo.setResume(resume); // 연관 관계 설정
+                        return academicInfo;
+                    })
+                    .collect(Collectors.toList());
+            resume.setAcademicInfoList(academicInfoList);
+        }
+
+        // 경력 정보 설정
+        if (resumeDto.getWorkExperienceList() != null) {
+            List<WorkExperience> workExperienceList = resumeDto.getWorkExperienceList().stream()
+                    .map(expDto -> {
+                        WorkExperience workExperience = new WorkExperience();
+                        workExperience.setCompanyName(expDto.getCompanyName());
+                        workExperience.setStartDate(expDto.getStartDate());
+                        workExperience.setEndDate(expDto.getEndDate());
+                        workExperience.setResponsibilities(expDto.getResponsibilities());
+                        workExperience.setResume(resume); // 연관 관계 설정
+                        return workExperience;
+                    })
+                    .collect(Collectors.toList());
+            resume.setWorkExperienceList(workExperienceList);
+        }
+
+        // 자격증 정보 설정
+        if (resumeDto.getCertifications() != null) {
+            List<Certification> certifications = resumeDto.getCertifications().stream()
+                    .map(certDto -> {
+                        Certification certification = new Certification();
+                        certification.setName(certDto.getName());
+                        certification.setDate(certDto.getDate());
+                        certification.setResume(resume); // 연관 관계 설정
+                        return certification;
+                    })
+                    .collect(Collectors.toList());
+            resume.setCertifications(certifications);
+        }
+
+        // Member 정보 설정
+        if (member != null) {
+            resume.setMember(member); // 연관 관계 설정
+        }
+
+        return resume;
+        }
 
     @Transactional
     public ResumeDto updateResume(Integer resumeId, ResumeRequestDto request) {
@@ -355,6 +494,39 @@ public class ResumeService {
         int months = totalMonths % 12;
         return years + "년 " + months + "개월";
     }
+
+    // Member 정보 가져오기
+    public Member getMemberInfo(Integer memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + memberId));
+    }
+
+    // Member ID로 이력서 가져오기
+    public Resume getResumeWithMemberInfo(Integer memberId) {
+        return resumeRepository.findByMember_MemberId(memberId)
+                .stream()
+                .findFirst() // 첫 번째 이력서 반환
+                .orElseThrow(() -> new IllegalArgumentException("No resume found for Member ID: " + memberId));
+    }
+
+    public boolean saveAddress(Integer memberId, Map<String, String> addressData) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        Resume resume = resumeRepository.findByMember_MemberId(memberId)
+                .stream().findFirst().orElse(new Resume());
+
+        resume.setPostcode(addressData.get("postcode"));
+        resume.setRoadAddress(addressData.get("roadAddress"));
+        resume.setDetailAddress(addressData.get("detailAddress"));
+        resume.setMember(member);
+
+        resumeRepository.save(resume);
+        return true;
+
+
+    }
 }
 
 /*
@@ -518,23 +690,6 @@ public class ResumeService {
                 .orElse(null);
     }
 
-    // 주소 저장 - 2번 항목
-    public boolean saveAddress(Integer memberId, Map<String, String> addressData) {
-
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
-        Resume resume = resumeRepository.findByMember_MemberId(memberId)
-                .stream().findFirst().orElse(new Resume());
-
-        resume.setPostcode(addressData.get("postcode"));
-        resume.setRoadAddress(addressData.get("roadAddress"));
-        resume.setDetailAddress(addressData.get("detailAddress"));
-        resume.setMember(member);
-
-        resumeRepository.save(resume);
-        return true;
-    }
 
     // 사용자 정보 및 이력서 정보 가져오기
     public Map<String, Object> getPersonalInfo(Integer memberId) {
@@ -663,7 +818,7 @@ public class ResumeService {
     // 제목과 해당 사용자의 주소 정보 조회 가능
 
     @Transactional
-    public void saveTitle(String title, Integer memberId, Long resumeId) {
+    public void saveTitle(String title, int userId, Integer resumeId) {
         // 회원 정보 가져오기
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -25,6 +26,8 @@ public class ResumeDto {
     private String roadAddress;
     private String detailAddress;
 
+    private int memberId;
+
     public String getFullAddress;
 
     private List<AcademicInfoDto> academicInfoList;
@@ -42,6 +45,11 @@ public class ResumeDto {
     private String reason;
     private String job;
     private String specialNote;
+
+    public void setBirth_day(LocalDate birth_day) {
+        this.birth_day = birth_day.toString(); // 필요 시 문자열로 변환
+    }
+
 
 
 }
